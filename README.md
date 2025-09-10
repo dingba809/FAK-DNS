@@ -50,8 +50,7 @@
   - 自动合并 Google / Apple / 中国域名加速规则
 
 ### 👉 **直接下载地址：**
-
-<https://raw.githubusercontent.com/Leev1s/FAK-DNS/master/converted/FAK-DNS.txt>
+<https://raw.githubusercontent.com/dingba809/FAK-DNS/master/converted/FAK-DNS.txt>
 
 ## 📥 配置 AdGuard Home
 
