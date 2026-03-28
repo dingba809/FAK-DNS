@@ -1,0 +1,52 @@
+name: Convert to SmartDNS
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Update upstream china conf files
+        run: |
+          set -euo pipefail
+          base="https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master"
+          for f in accelerated-domains.china.conf apple.china.conf google.china.conf bogus-nxdomain.china.conf; do
+            curl -fsSL "$base/$f" -o "$f"
+          done
+
+      - name: Run conversion script
+        run: python convert2smartdns.py
+
+      - name: Commit and push changes
+        run: |
+          set -e
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          git add accelerated-domains.china.conf apple.china.conf google.china.conf bogus-nxdomain.china.conf converted/chinadomain.conf
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update chinadomain.conf (${timestamp})"
+            git push
+          fi
